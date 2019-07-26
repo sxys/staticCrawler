@@ -22,11 +22,13 @@ browser = webdriver.Chrome(chrome_options=chrome_options)
 url = 'http://s.zhaobiao.cn/s?searchtype=sj&queryword=%D6%B4%B7%A8%B0%EC%B0%B8%D0%C5%CF%A2%B2%C9%BC%AF'
 browser.get(url)
 
-browser.add_cookie({'name': 'JSESSIONID', 'value': '1C3E8B03FA3A2580B9FA5348BD472EAB', 'domain':'s.zhaobiao.cn', 'path': '/', 'expires': None})
-browser.add_cookie({'name': '__jsl_clearance', 'value': '1563259172.576|0|zfb7Ro94pbltZ7r5%2FRmwI%2FDfAjI%3D', 'domain':'s.zhaobiao.cn', 'path': '/', 'expires': None})
-browser.add_cookie({'name': '__jsluid_h', 'value': '6197c0f0f4296d06fc194b8dba0f1ab5', 'domain':'s.zhaobiao.cn', 'path': '/', 'expires': None})
-browser.add_cookie({'name': 'bdshare_firstime', 'value': '1562898372900', 'domain':'s.zhaobiao.cn', 'path': '/', 'expires': None})
-browser.add_cookie({'name': 'reg_referer', 'value': 'aHR0cDovL3Muemhhb2JpYW8uY24vcz9zZWFyY2h0eXBlPXNqJmZpZWxkPXN1cGVyJnF1ZXJ5d29yZD0lQjAlRUMlQjAlQjglQzclRjglMDk', 'domain':'s.zhaobiao.cn', 'path': '/', 'expires': None})
+browser.add_cookie({'name': 'JSESSIONID', 'value': '272E0A1B7D2CF5452172349B6CCA0869', 'domain':'s.zhaobiao.cn', 'path': '/', 'expires': None})
+# browser.add_cookie({'name': '__jsl_clearance', 'value': '1563259172.576|0|zfb7Ro94pbltZ7r5%2FRmwI%2FDfAjI%3D', 'domain':'s.zhaobiao.cn', 'path': '/', 'expires': None})
+browser.add_cookie({'name': '__jsluid_h', 'value': '66fbd5c758d186e9c087c1e3e838d5e7', 'domain':'s.zhaobiao.cn', 'path': '/', 'expires': None})
+browser.add_cookie({'name': 'bdshare_firstime', 'value': '1563499443215', 'domain':'s.zhaobiao.cn', 'path': '/', 'expires': None})
+browser.add_cookie({'name': 'reg_referer', 'value': 'aHR0cDovL3Muemhhb2JpYW8uY24vcz9zZWFyY2h0eXBlPXNqJmZpZWxkPXN1cGVyJnF1ZXJ5d29yZD0lQjklQUIlQjAlQjIlQkUlRDY=', 'domain':'s.zhaobiao.cn', 'path': '/', 'expires': None})
+browser.add_cookie({'name': '__jsluid_h', 'value': '40c64893f7a208e687700ecade273def', 'domain':'user.zhaobiao.cn', 'path': '/', 'expires': None})
+browser.add_cookie({'name': 'JSESSIONID', 'value': 'E1B1EBBA05CC876EDDC7798285A8AC4D', 'domain':'www.zhaobiao.cn', 'path': '/', 'expires': None})
 browser.get(url)
 # 等待一定时间，让js脚本加载完毕
 browser.implicitly_wait(5)
@@ -39,9 +41,9 @@ print(len(rows))
 url = 'http://zb.zhaobiao.cn/bidding_v_41683673.html?q=%B0%EC%B0%B8%C7%F8'
 
 cookie_jar = RequestsCookieJar()
-cookie_jar.set("JSESSIONID", "CF708C900D5111EAFC19E1B826CB6025:FG=1", domain="zb.zhaobiao.cn")
+cookie_jar.set("JSESSIONID", "7B06A61760047C9AD057E30045C30F7A", domain="zb.zhaobiao.cn")
 cookie_jar.set("__jsluid_h", "0a7da778c4707c1e4d0e0a0cb8c395b0", domain="zb.zhaobiao.cn")
-cookie_jar.set("reg_referer", "aHR0cDovLzE5Mi4xNjguMS4xNTI6ODA4MS8=", domain="zb.zhaobiao.cn")
+cookie_jar.set("reg_referer", "aHR0cDovL3Muemhhb2JpYW8uY24vcz9zZWFyY2h0eXBlPXNqJmZpZWxkPXN1cGVyJnF1ZXJ5d29yZD0lRDIlQkIlQ0MlRTUlQkIlQUYlQjIlQzklQkMlQUYlQzklRTglQjElQjg=", domain="zb.zhaobiao.cn")
 
 headers = {
 'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36'
