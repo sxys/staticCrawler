@@ -114,33 +114,48 @@ def get_cookies(yzm):
 		time.sleep(5)
 		cookie_list = browser.get_cookies()
 		print(cookie_list)
-		return cookie_list
+		new_cookie_list = []
+		for cookie in cookie_list:
+			if 'expiry' in cookie:
+				del cookie['expiry']
+
+			if 'httpOnly' in cookie:
+				del cookie['httpOnly']
+
+			if 'secure' in cookie:	
+				del cookie['secure']
+
+			new_cookie_list.append(cookie)
+
+		return new_cookie_list
 	except Exception as e:
 		print('cannot get cookies')
 		print(e)
 		return []
 
-
-
 def query_content(url,cookie_jar) :
 	headers = {
 	'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36'
 	}
-
-	res = requests.get(url, headers=headers, cookies=cookie_jar)
+	s=requests.session()
+	print('------------------')
+	print(cookie_jar.get_dict())
+	res = s.get(url, headers=headers, cookies=cookie_jar)
 	try:
 		soup=BeautifulSoup(res.text,'lxml')
-		#print(soup)
+		print(soup)
 		text = soup.find('div', class_='zw_hide')
-		# print(text.text)
+		print(text.text)
 		if text is not None:
 			aa = text.text
 			return aa[0:2000]
 	except Exception as e:
+		print(e)
 		return ''
 
 #插入数据
 def insertDB(dataList):
+	print(len(dataList))
 	for data_row in dataList:
 		cursor_oracle.execute("select * from zhaobiao where title = '" + data_row['title'] + "'")
 		cur_row = cursor_oracle.fetchone()
@@ -150,19 +165,57 @@ def insertDB(dataList):
 	cursor_oracle.close()
 	connection_oracle.close()
 
-#开始采集
+#获取详情
+def getDetailContent(dataList, cookie_list):
+	new_data_list = []
+	for data in dataList:
+		url = data['link']
+		# browser.get(url)
+		content = ''
+		download_url = ''
+		try:
+			#设置搜索界面的cookie
+			for cookie in cookie_list:
+				browser.add_cookie(cookie)
+			
+			browser.get(url)
+			browser.implicitly_wait(5)
+		except Exception as e:
+			continue
+				
+		try:
+			detail = browser.find_element_by_class_name('zw_hide')
+			content = detail.get_attribute('outerHTML')
+			data['content'] = content[0:2000]
+		except Exception as e:
+			print(e)
+			data['content'] = ''
+
+		try:
+			download = browser.find_element_by_class_name('w-docDown')
+			download_url = download.get_attribute('href')
+			print(download_url)
+		except Exception as e:
+			print(e)
+			download_url = ''
+
+		# data['content'] = content[0:2000]
+		data['download_url'] = download_url
+		new_data_list.append(data)
+	return new_data_list
+
+
+#获取搜索列表
 def getCrawlerData(keyword_list, cookie_list):
 	list_url = 'http://s.zhaobiao.cn/s?searchtype=sj&queryword='
 
-	cookie_jar = RequestsCookieJar()
+	# cookie_jar = RequestsCookieJar()
 
 	#设置正文查看的cookie
-	cookie_dict = {}
-	for cookie in cookie_list:
-		cookie_dict[cookie['name']]=cookie['value']
-	if 'JSESSIONID' in cookie_dict :	
-		cookie_jar.set("JSESSIONID", cookie_dict['JSESSIONID'], domain="zb.zhaobiao.cn")
-	
+	# cookie_dict = {}
+	# for cookie in cookie_list:
+	# 	cookie_jar.set(cookie['name'], cookie['value'], domain=cookie['domain'])
+
 	dataList = []
 	for keyword in keyword_list :
 		print(keyword)
@@ -173,14 +226,6 @@ def getCrawlerData(keyword_list, cookie_list):
 
 		#设置搜索界面的cookie
 		for cookie in cookie_list:
-			if 'expiry' in cookie:
-				del cookie['expiry']
-
-			if 'httpOnly' in cookie:
-				del cookie['httpOnly']
-
-			if 'secure' in cookie:	
-				del cookie['secure']
 			browser.add_cookie(cookie)
 		# browser.add_cookie({'name': 'Cookies_token', 'value': cookie_obj['Cookies_token'], 'domain':'.zhaobiao.cn', 'path': '/', 'expires': None})
 		# browser.add_cookie({'name': 'Hm_lpvt_956837707a3009cb8b2b4f89a9280996', 'value': '1564044384', 'domain':'.zhaobiao.cn', 'path': '/', 'expires': None})
@@ -207,7 +252,7 @@ def getCrawlerData(keyword_list, cookie_list):
 				#cursor_oracle.callproc('insertzhaobiao', ('', '','','',keyword,'', '', ''))
 			else:
 				if aa :
-					title = row.find_element_by_tag_name('span')
+					title = row.find_element_by_tag_name('span').text
 					#print(title)
 					# 找到地区、时间
 					td = browser.find_element_by_xpath("//tbody[@id='datatbody']").find_elements_by_tag_name('td')
@@ -219,37 +264,18 @@ def getCrawlerData(keyword_list, cookie_list):
 					#获取链接
 					link = aa.get_attribute('href')
 					print(link)
-					print(title.text)
+					print(title)
 					#访问链接获取内容
 
-					headers = {
-					'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36'
-					}
-	
-					res = requests.get(link, headers=headers, cookies=cookie_jar)
-					soup=BeautifulSoup(res.text,'lxml')
-					# print(soup)
-					download_url = 'http://zb.zhaobiao.cn'
-					try:
-						download = soup.find('a', class_='w-docDown')
-						# print(download)
-						if download is not None:
-							download_url = download_url + download['href']
-							print(download_url)
-						else :
-							download_url = ''
-					except Exception as e:
-						download_url = ''
-
-					content = query_content(link,cookie_jar)
+					# content = query_content(link,cookie_jar)
 					data_row = {}
-					data_row['title'] = title.text
+					data_row['title'] = title
 					data_row['region'] = region
 					data_row['date'] = date
-					data_row['content'] = content
+					# data_row['content'] = content
 					data_row['keyword'] = keyword
 					data_row['link'] = link
-					data_row['download_url'] = download_url
+					# data_row['download_url'] = download_url
 					data_row['gg_type'] = gg_type
 
 					dataList.append(data_row)
@@ -262,19 +288,19 @@ if __name__ == "__main__":
 	cookie_list = []
 	
 	keyword_list = [
-	'执法办案信息采集', \
-	'人员综合信息采集', \
-	'人员信息标准化采集', \
-	'信息综合采集', \
-	'办案区信息采集设备', \
-	'人员信息快速录入系统', \
-	'标准化基础信息采集', \
-	'刑侦一体化采集', \
-	'一体化采集', \
-	'综合采集', \
-	'信息采集一体机', \
+	# '执法办案信息采集', \
+	# '人员综合信息采集', \
+	# '人员信息标准化采集', \
+	# '信息综合采集', \
+	# '办案区信息采集设备', \
+	# '人员信息快速录入系统', \
+	# '标准化基础信息采集', \
+	# '刑侦一体化采集', \
+	# '一体化采集', \
+	# '综合采集', \
+	# '信息采集一体机', \
 	'办案区', \
-	'一体化采集设备'
+	# '一体化采集设备'
 	]
 
 	for num in range(10,20):
@@ -286,7 +312,8 @@ if __name__ == "__main__":
 			if(len(cookie_list) > 0):
 
 				dataList = getCrawlerData(keyword_list, cookie_list)
-				insertDB(dataList)
+				new_data_list = getDetailContent(dataList, cookie_list)
+				insertDB(new_data_list)
 				
 				break
 
